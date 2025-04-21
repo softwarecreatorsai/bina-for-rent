@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מייטל - אירועי החודש</title>
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio"></script>
+    <style type="text/tailwindcss">
+        /* Add custom base styles or components here if needed, */
+        /* but try to rely on utilities as much as possible */
+        body {
+            font-family: 'Heebo', sans-serif;
+            @apply antialiased bg-gray-100 text-gray-800 leading-relaxed;
+        }
+        html {
+            scroll-padding-top: 80px; /* Adjust based on final navbar height */
+        }
+        /* Custom gradient text if needed */
+        .gradient-text-primary-secondary {
+            @apply bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 bg-clip-text text-transparent;
+        }
+        .gradient-text-accent-secondary {
+             @apply bg-gradient-to-r from-cyan-400 to-pink-400 bg-clip-text text-transparent;
+        }
+        /* Simple pulse for calendar indicator */
+        .animate-pulse-indicator {
+            animation: pulse-indicator 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse-indicator {
+          0%, 100% {
+            opacity: 1;
+            transform: scale(1);
+          }
+          50% {
+            opacity: .7;
+            transform: scale(1.1);
+          }
+        }
+         /* Class to apply animation on scroll */
+         .animate-on-scroll {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+        .animate-on-scroll.animated {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        /* Custom styles for background shapes if desired (keep minimal) */
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -10%; left: -20%;
+            width: 500px; height: 500px;
+            background-image: radial-gradient(circle, theme(colors.purple.500 / 0.08), transparent 70%);
+            border-radius: 50%;
+            filter: blur(60px);
+            z-index: 0;
+            animation: float 15s ease-in-out infinite alternate;
+            pointer-events: none;
+        }
+         .hero::after {
+             content: '';
+            position: absolute;
+            bottom: -20%; right: -15%;
+            width: 600px; height: 600px;
+            background-image: radial-gradient(circle, theme(colors.cyan.400 / 0.08), transparent 70%);
+            border-radius: 50%;
+            filter: blur(70px);
+            z-index: 0;
+             animation: float 20s ease-in-out infinite alternate-reverse;
+             pointer-events: none;
+        }
+         @keyframes float {
+             0% { transform: translate(0, 0) scale(1); }
+             100% { transform: translate(20px, 30px) scale(1.1); }
+         }
+    </style>
+    <script>
+        // Optional: Configure Tailwind defaults if needed (usually done in tailwind.config.js)
+        tailwind.config = {
+          theme: {
+            extend: {
+              fontFamily: {
+                sans: ['Heebo', 'sans-serif'],
+              },
+              colors: {
+                 // Add custom colors if the default palette isn't enough
+                 primary: '#7859f2',
+                 'primary-dark': '#5739d6',
+                 secondary: '#ff4a6b',
+                 'secondary-light': '#ff97ab',
+                 accent: '#00d0de',
+                 'accent-light': '#b3f6fb',
+              }
+            }
+          }
+        }
+      </script>
+
+</head>
+<body class="bg-gray-100">
+    <!-- Navigation Bar -->
+    <nav class="fixed top-0 left-0 right-0 z-50 transition-all duration-300 backdrop-blur-lg bg-slate-900/80 border-b border-white/10" id="mainNav">
+        <div class="container mx-auto px-5">
+            <div class="flex justify-between items-center py-3 transition-all duration-300" id="nav-container">
+                <a href="#" class="flex items-center gap-3 transition-transform hover:scale-105">
+                    <div class="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-cyan-400 to-teal-500 rounded-xl shadow-md flex-shrink-0">
+                        <i class="fas fa-brain text-xl text-white"></i>
+                    </div>
+                    <span class="font-bold text-xl text-white gradient-text-accent-secondary hidden sm:inline">בינה להשכיר</span>
+                </a>
+                <!-- Hamburger Menu Button -->
+                <button class="md:hidden text-white text-2xl" id="mobile-nav-toggle" aria-label="תפריט ניווט" aria-expanded="false">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <!-- Navigation Links -->
+                <ul class="hidden md:flex items-center gap-1" id="nav-links">
+                    <li><a href="#calendar" class="nav-link px-4 py-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-full text-sm font-medium flex items-center gap-2 transition-colors duration-200"><i class="fas fa-calendar-alt fa-fw opacity-80"></i><span>לוח אירועים</span></a></li>
+                    <li><a href="#events" class="nav-link px-4 py-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-full text-sm font-medium flex items-center gap-2 transition-colors duration-200"><i class="fas fa-star fa-fw opacity-80"></i><span>האירועים שלנו</span></a></li>
+                    <li><a href="#projects" class="nav-link px-4 py-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-full text-sm font-medium flex items-center gap-2 transition-colors duration-200"><i class="fas fa-lightbulb fa-fw opacity-80"></i><span>פרויקטים</span></a></li>
+                    <li><a href="https://www.facebook.com/share/g/15kQXLvtWk/?mibextid=wwXIfr" class="nav-link facebook-link px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-full text-sm font-medium flex items-center gap-2 shadow-sm hover:shadow-md transition-shadow" target="_blank" rel="noopener noreferrer"><i class="fab fa-facebook-f fa-fw"></i><span>קהילה בפייסבוק</span></a></li>
+                </ul>
+            </div>
+            <!-- Mobile Menu Links (hidden initially) -->
+             <div class="hidden md:hidden pb-4" id="mobile-menu">
+                 <ul class="flex flex-col gap-3 pt-3">
+                    <li><a href="#calendar" class="nav-link block w-full text-center px-4 py-3 bg-slate-800/70 hover:bg-slate-700/70 text-gray-200 hover:text-white rounded-lg text-base font-medium flex items-center justify-center gap-2 transition-colors duration-200"><i class="fas fa-calendar-alt fa-fw opacity-80"></i><span>לוח אירועים</span></a></li>
+                    <li><a href="#events" class="nav-link block w-full text-center px-4 py-3 bg-slate-800/70 hover:bg-slate-700/70 text-gray-200 hover:text-white rounded-lg text-base font-medium flex items-center justify-center gap-2 transition-colors duration-200"><i class="fas fa-star fa-fw opacity-80"></i><span>האירועים שלנו</span></a></li>
+                    <li><a href="#projects" class="nav-link block w-full text-center px-4 py-3 bg-slate-800/70 hover:bg-slate-700/70 text-gray-200 hover:text-white rounded-lg text-base font-medium flex items-center justify-center gap-2 transition-colors duration-200"><i class="fas fa-lightbulb fa-fw opacity-80"></i><span>פרויקטים</span></a></li>
+                    <li><a href="https://www.facebook.com/share/g/15kQXLvtWk/?mibextid=wwXIfr" class="nav-link facebook-link block w-full text-center px-4 py-3 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-lg text-base font-medium flex items-center justify-center gap-2 shadow-sm hover:shadow-md transition-shadow" target="_blank" rel="noopener noreferrer"><i class="fab fa-facebook-f fa-fw"></i><span>קהילה בפייסבוק</span></a></li>
+                </ul>
+             </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="relative overflow-hidden bg-gradient-to-br from-slate-900 to-gray-900 text-white min-h-[90vh] flex items-center justify-center text-center py-24 sm:py-32" id="home">
+        <div class="container mx-auto px-5 relative z-10 animate-on-scroll">
+             <div class="inline-block mb-6 animate-on-scroll" style="transition-delay: 0.1s;">
+                 <div class="mx-auto w-24 h-24 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-3xl flex items-center justify-center shadow-xl relative overflow-hidden">
+                    <i class="fas fa-brain text-5xl text-white"></i>
+                </div>
+            </div>
+            <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold mb-3 gradient-text-primary-secondary animate-on-scroll" style="transition-delay: 0.2s;">בינה להשכיר</h1>
+            <h2 class="text-2xl sm:text-3xl font-semibold text-cyan-300 mb-6 animate-on-scroll" style="transition-delay: 0.3s;">הקהילה של מייטל</h2>
+            <p class="max-w-2xl mx-auto text-lg text-gray-300 mb-8 animate-on-scroll" style="transition-delay: 0.4s;">החיים בקצב מסחרר, והקהילה שלנו לא עוצרת לרגע. עשרות סדנאות ולייבים, עיניים נוצצות, רגעים של תובנה – וכלים שפעם היו רק "AI" הופכים ליכולות שמשנות חיים.</p>
+            <div class="flex justify-center gap-4 mb-12 flex-wrap animate-on-scroll" style="transition-delay: 0.5s;">
+                <a href="https://www.facebook.com/share/g/15kQXLvtWk/?mibextid=wwXIfr" class="inline-flex items-center gap-2 px-7 py-3 rounded-full font-semibold transition-all duration-300 ease-out transform hover:scale-[1.03] bg-gradient-to-r from-pink-500 to-red-500 text-white shadow-lg shadow-pink-500/30 hover:shadow-xl hover:shadow-pink-500/40" target="_blank" rel="noopener noreferrer">
+                    <i class="fas fa-users"></i>
+                    <span>הצטרפו לקהילה</span>
+                </a>
+                <a href="#events" class="inline-flex items-center gap-2 px-7 py-3 rounded-full font-semibold transition-all duration-300 ease-out transform hover:scale-[1.03] bg-white/10 border border-white/20 text-white backdrop-blur-sm hover:bg-white/20 shadow-md hover:shadow-lg">
+                    <i class="fas fa-calendar-check"></i>
+                    <span>אירועי החודש</span>
+                </a>
+            </div>
+            <div class="flex justify-center gap-8 sm:gap-12 flex-wrap animate-on-scroll" style="transition-delay: 0.6s;">
+                <div class="flex flex-col items-center">
+                    <span class="text-4xl font-bold text-pink-400">5</span>
+                    <span class="text-sm text-gray-400 mt-1 font-medium">אירועים</span>
+                </div>
+                <div class="flex flex-col items-center">
+                    <span class="text-4xl font-bold text-cyan-400">3</span>
+                    <span class="text-sm text-gray-400 mt-1 font-medium">חינמיים</span>
+                </div>
+                <div class="flex flex-col items-center">
+                    <span class="text-4xl font-bold text-purple-400">2</span>
+                    <span class="text-sm text-gray-400 mt-1 font-medium">פרויקטים</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Calendar Section -->
+    <section class="py-20 sm:py-24 relative overflow-hidden bg-gray-100" id="calendar">
+        <div class="container mx-auto px-5">
+            <div class="text-center mb-12 sm:mb-16 animate-on-scroll">
+                <span class="inline-flex items-center gap-2 bg-purple-100 text-purple-700 px-4 py-1.5 rounded-full text-xs sm:text-sm font-semibold uppercase tracking-wider mb-4">
+                    <i class="fas fa-calendar-days"></i> הלו״ז שלנו
+                </span>
+                <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-4 relative inline-block after:content-[''] after:absolute after:w-16 after:h-1 after:bg-gradient-to-r after:from-cyan-400 after:to-teal-500 after:bottom-[-10px] after:left-1/2 after:-translate-x-1/2 after:rounded-full">
+                    לוח אירועים - מאי 2025
+                </h2>
+                <p class="max-w-2xl mx-auto text-gray-600 text-base sm:text-lg">החיים בקצב מסחרר, והקהילה שלנו לא עוצרת לרגע. גללו למטה לפרטים על כל אירוע או לחצו על התאריכים המסומנים בלוח השנה.</p>
+            </div>
+            <div class="relative z-10 bg-white rounded-3xl shadow-xl p-5 sm:p-8 max-w-4xl mx-auto overflow-hidden border border-gray-100 animate-on-scroll" style="transition-delay: 0.2s;">
+                <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-purple-500 to-indigo-600"></div>
+                <div class="flex items-center justify-center gap-3 mb-6 text-xl font-bold text-purple-600">
+                    <div class="w-9 h-9 bg-purple-600 text-white flex items-center justify-center rounded-lg text-lg shadow-sm flex-shrink-0">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <span>מאי 2025</span>
+                </div>
+                 <!-- Desktop Header -->
+                <div class="hidden sm:grid grid-cols-7 gap-2 sm:gap-3 text-center text-xs font-semibold text-gray-500 uppercase pb-2 mb-3 border-b border-gray-200">
+                    <div>ראשון</div>
+                    <div>שני</div>
+                    <div>שלישי</div>
+                    <div>רביעי</div>
+                    <div>חמישי</div>
+                    <div>שישי</div>
+                    <div>שבת</div>
+                </div>
+                 <!-- Mobile Header -->
+                 <div class="grid sm:hidden grid-cols-7 gap-1 text-center text-xs font-semibold text-gray-500 uppercase pb-2 mb-3 border-b border-gray-200">
+                    <div>א</div>
+                    <div>ב</div>
+                    <div>ג</div>
+                    <div>ד</div>
+                    <div>ה</div>
+                    <div>ו</div>
+                    <div>ש</div>
+                </div>
+                <div class="calendar grid grid-cols-7 gap-1.5 sm:gap-2">
+                    <!-- Calendar days generated by JS -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Events Section -->
+    <section class="py-20 sm:py-24 relative overflow-hidden bg-gray-900 text-gray-200" id="events">
+        <div class="container mx-auto px-5">
+             <div class="text-center mb-12 sm:mb-16 animate-on-scroll">
+                <span class="inline-flex items-center gap-2 bg-cyan-500/10 text-cyan-300 px-4 py-1.5 rounded-full text-xs sm:text-sm font-semibold uppercase tracking-wider mb-4">
+                    <i class="fas fa-stars"></i> הצטרפו אלינו
+                </span>
+                <h2 class="text-3xl sm:text-4xl font-extrabold text-white mb-4 relative inline-block after:content-[''] after:absolute after:w-16 after:h-1 after:bg-gradient-to-r after:from-cyan-400 after:to-teal-500 after:bottom-[-10px] after:left-1/2 after:-translate-x-1/2 after:rounded-full">
+                    אירועי החודש
+                </h2>
+                <p class="max-w-2xl mx-auto text-gray-400 text-base sm:text-lg">כי כשנכנסים לעומק – זה כבר לא עוד גימיק.<br>זה הכוח לחולל שינוי. אמיתי.</p>
+            </div>
+            <div class="events-container grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+                <!-- Event cards generated by JS -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Projects Section -->
+    <section class="py-20 sm:py-28 relative overflow-hidden bg-gray-50" id="projects">
+        <div class="container mx-auto px-5">
+            <div class="text-center mb-12 sm:mb-16 animate-on-scroll">
+                <span class="inline-flex items-center gap-2 bg-purple-100 text-purple-700 px-4 py-1.5 rounded-full text-xs sm:text-sm font-semibold uppercase tracking-wider mb-4">
+                   <i class="fas fa-project-diagram"></i> יוזמות מיוחדות
+                </span>
+                <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-4 relative inline-block after:content-[''] after:absolute after:w-16 after:h-1 after:bg-gradient-to-r after:from-cyan-400 after:to-teal-500 after:bottom-[-10px] after:left-1/2 after:-translate-x-1/2 after:rounded-full">
+                    קצת מאחורי הקלעים...
+                </h2>
+                <p class="max-w-2xl mx-auto text-gray-600 text-base sm:text-lg">מעבר לקהילה – אני גם מרצה ומובילה פרויקטים מרגשים בארגונים. רוצה לשתף אתכם בשני שיתופי פעולה שאני גאה בהם במיוחד:</p>
+            </div>
+
+            <div class="projects-container grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-10">
+                <!-- Project Card 1: AI DREAM -->
+                <div class="project-card bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden flex flex-col transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 animate-on-scroll" style="transition-delay: 0.1s;">
+                    <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-purple-500 to-indigo-600"></div>
+                    <div class="p-6 sm:p-8 border-b border-gray-100 flex flex-col sm:flex-row items-center gap-5 text-center sm:text-right bg-gray-50/50">
+                        <div class="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg">
+                            <i class="fas fa-hand-holding-heart text-2xl text-white"></i>
+                        </div>
+                        <h3 class="text-xl sm:text-2xl font-bold text-gray-900 grow">AI DREAM</h3>
+                    </div>
+                    <div class="p-6 sm:p-8 flex-grow">
+                        <p class="text-gray-600 mb-6">
+                            לחלום, להאמין, לבצע. סדנה מיוחדת בשיתוף עם <strong class="font-semibold text-purple-600">עדי ארקליס</strong> – מאמנת מנטלית מנוסה.
+                            השילוב המושלם בין אימון מנטלי לבינה מלאכותית מייצר חוויה שלא הכרתם עד כה.
+                        </p>
+                        <ul class="space-y-3 text-gray-700 text-sm">
+                            <li class="flex items-start gap-3">
+                                <i class="fas fa-check text-purple-500 mt-1 flex-shrink-0"></i>
+                                <span>סדנה ליצירת תמונת מציאות רצויה וכלים להגשמה</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <i class="fas fa-check text-purple-500 mt-1 flex-shrink-0"></i>
+                                <span>חיבור העובדים למה שחשוב דרך שילוב בינה ומיינדסט</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <i class="fas fa-check text-purple-500 mt-1 flex-shrink-0"></i>
+                                <span>שילוב כלים טכנולוגיים עם עבודה על פסיכולוגיה אנושית</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="p-5 sm:p-6 border-t border-gray-100 bg-gray-50/50 flex flex-col sm:flex-row justify-between items-center gap-4">
+                        <div class="flex flex-wrap justify-center sm:justify-start gap-2">
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-700"><i class="fas fa-brain opacity-70"></i> אימון מנטלי</span>
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-700"><i class="fas fa-robot opacity-70"></i> AI</span>
+                        </div>
+                        <a href="#" class="inline-flex items-center justify-center gap-2 px-5 py-2 rounded-full text-sm font-semibold bg-purple-600 text-white shadow-md hover:bg-purple-700 transition-colors duration-200 w-full sm:w-auto" id="contact-ai-dream">
+                            <span>לפרטים נוספים</span>
+                            <i class="fas fa-arrow-left text-xs"></i>
+                        </a>
+                    </div>
+                </div>
+
+                 <!-- Project Card 2: AI TAKE OFF -->
+                <div class="project-card bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden flex flex-col transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 animate-on-scroll" style="transition-delay: 0.2s;">
+                    <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-pink-500 to-red-500"></div>
+                    <div class="p-6 sm:p-8 border-b border-gray-100 flex flex-col sm:flex-row items-center gap-5 text-center sm:text-right bg-gray-50/50">
+                         <div class="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-pink-500 to-red-500 rounded-2xl flex items-center justify-center shadow-lg">
+                            <i class="fas fa-plane-departure text-2xl text-white"></i>
+                        </div>
+                        <h3 class="text-xl sm:text-2xl font-bold text-gray-900 grow">AI TAKE OFF</h3>
+                    </div>
+                    <div class="p-6 sm:p-8 flex-grow">
+                         <p class="text-gray-600 mb-6">
+                            הכשרות בינה מלאכותית מותאמות אישית לארגונים. בהובלת <strong class="font-semibold text-pink-600">ארז ליבנה</strong>, מדען ממכון ויצמן שעבד עם נאס"א,
+                            ובשיתוף עם <strong class="font-semibold text-pink-600">ליאורה גורן</strong> – יועצת עסקית ומלווה בעלי עסקים מנוסה.
+                        </p>
+                        <ul class="space-y-3 text-gray-700 text-sm">
+                            <li class="flex items-start gap-3">
+                                <i class="fas fa-check text-pink-500 mt-1 flex-shrink-0"></i>
+                                <span>תכניות הכשרה מותאמות לצרכים הספציפיים של הארגון שלכם</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <i class="fas fa-check text-pink-500 mt-1 flex-shrink-0"></i>
+                                <span>שילוב ידע אקדמי מתקדם עם ניסיון עסקי מוכח</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <i class="fas fa-check text-pink-500 mt-1 flex-shrink-0"></i>
+                                <span>פתרונות מעשיים שניתן ליישם מיד בארגון</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="p-5 sm:p-6 border-t border-gray-100 bg-gray-50/50 flex flex-col sm:flex-row justify-between items-center gap-4">
+                        <div class="flex flex-wrap justify-center sm:justify-start gap-2">
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-pink-100 text-pink-700"><i class="fas fa-chalkboard-teacher opacity-70"></i> הכשרות</span>
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-pink-100 text-pink-700"><i class="fas fa-building opacity-70"></i> ארגונים</span>
+                        </div>
+                         <a href="#" class="inline-flex items-center justify-center gap-2 px-5 py-2 rounded-full text-sm font-semibold bg-pink-600 text-white shadow-md hover:bg-pink-700 transition-colors duration-200 w-full sm:w-auto" id="contact-ai-takeoff">
+                            <span>לפרטים נוספים</span>
+                            <i class="fas fa-arrow-left text-xs"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 text-gray-300 py-16 text-center relative overflow-hidden border-t-4 border-purple-600">
+         <!-- Optional: Subtle wave/pattern -->
+         <div class="absolute bottom-0 left-0 right-0 h-24 opacity-5 bg-repeat-x" style="background-image: url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 10\"><path d=\"M0 5 Q 25 10, 50 5 T 100 5\" stroke=\"white\" fill=\"transparent\" stroke-width=\"0.2\"/></svg>')"></div>
+
+        <div class="container mx-auto px-5 relative z-10">
+             <a href="#" class="footer-logo inline-block mb-6 transition-transform hover:scale-105 animate-on-scroll">
+                <div class="flex items-center justify-center gap-3">
+                    <div class="w-11 h-11 bg-gradient-to-br from-cyan-400 to-teal-500 rounded-xl flex items-center justify-center shadow-lg">
+                        <i class="fas fa-brain text-xl text-white"></i>
+                    </div>
+                    <div class="text-xl font-bold text-white">בינה להשכיר</div>
+                </div>
+            </a>
+            <p class="max-w-xl mx-auto text-gray-400 mb-8 text-base animate-on-scroll" style="transition-delay: 0.1s;">
+                הקהילה שלנו לא עוצרת לרגע. הצטרפו לעשרות סדנאות ולייבים, וגלו איך כלים שפעם היו רק "AI" הופכים ליכולות שמשנות חיים.
+            </p>
+            <div class="flex justify-center gap-4 mb-8 animate-on-scroll" style="transition-delay: 0.2s;">
+                <a href="https://www.facebook.com/share/g/15kQXLvtWk/?mibextid=wwXIfr" target="_blank" rel="noopener noreferrer" class="w-11 h-11 bg-white/10 hover:bg-[#1877f2] border border-white/10 hover:border-transparent rounded-full flex items-center justify-center text-white transition-all duration-300 transform hover:-translate-y-1 hover:scale-110" aria-label="Facebook"><i class="fab fa-facebook-f text-lg"></i></a>
+                <a href="#" class="w-11 h-11 bg-white/10 hover:bg-gradient-to-bl hover:from-[#f09433] hover:to-[#bc1888] border border-white/10 hover:border-transparent rounded-full flex items-center justify-center text-white transition-all duration-300 transform hover:-translate-y-1 hover:scale-110" aria-label="Instagram"><i class="fab fa-instagram text-lg"></i></a>
+                <a href="#" class="w-11 h-11 bg-white/10 hover:bg-[#0077b5] border border-white/10 hover:border-transparent rounded-full flex items-center justify-center text-white transition-all duration-300 transform hover:-translate-y-1 hover:scale-110" aria-label="LinkedIn"><i class="fab fa-linkedin-in text-lg"></i></a>
+                <a href="#" class="w-11 h-11 bg-white/10 hover:bg-[#25d366] border border-white/10 hover:border-transparent rounded-full flex items-center justify-center text-white transition-all duration-300 transform hover:-translate-y-1 hover:scale-110" aria-label="WhatsApp"><i class="fab fa-whatsapp text-lg"></i></a>
+            </div>
+            <nav class="mb-8 animate-on-scroll" style="transition-delay: 0.3s;">
+                <ul class="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm">
+                    <li><a href="#calendar" class="hover:text-white relative after:content-[''] after:absolute after:bottom-[-4px] after:left-0 after:right-0 after:h-0.5 after:bg-cyan-400 after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:duration-300 after:origin-center">לוח אירועים</a></li>
+                    <li><a href="#events" class="hover:text-white relative after:content-[''] after:absolute after:bottom-[-4px] after:left-0 after:right-0 after:h-0.5 after:bg-cyan-400 after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:duration-300 after:origin-center">האירועים שלנו</a></li>
+                    <li><a href="#projects" class="hover:text-white relative after:content-[''] after:absolute after:bottom-[-4px] after:left-0 after:right-0 after:h-0.5 after:bg-cyan-400 after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:duration-300 after:origin-center">פרויקטים</a></li>
+                    <li><a href="https://www.facebook.com/share/g/15kQXLvtWk/?mibextid=wwXIfr" target="_blank" rel="noopener noreferrer" class="hover:text-white relative after:content-[''] after:absolute after:bottom-[-4px] after:left-0 after:right-0 after:h-0.5 after:bg-cyan-400 after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:duration-300 after:origin-center">הקהילה בפייסבוק</a></li>
+                </ul>
+            </nav>
+             <!-- Promotional Link -->
+            <p class="mt-8 text-sm text-gray-400 animate-on-scroll" style="transition-delay: 0.4s;">
+                רוצים ללמוד לבנות ככה? הצטרפו <a href="https://www.softwarecreatorsai.com" target="_blank" rel="noopener noreferrer" class="font-semibold text-purple-400 hover:text-purple-300 underline transition-colors">www.softwarecreatorsai.com</a>
+            </p>
+            <p class="mt-6 pt-6 border-t border-white/10 text-xs text-gray-500 animate-on-scroll" style="transition-delay: 0.5s;">
+                © 2025 בינה להשכיר | הקהילה של מייטל. כל הזכויות שמורות.
+            </p>
+        </div>
+    </footer>
+
+    <!-- Floating Action Button REMOVED -->
+
+    <!-- Back to Top Button -->
+    <button class="fixed bottom-6 right-6 z-40 w-11 h-11 bg-slate-800 hover:bg-purple-600 text-white rounded-full flex items-center justify-center shadow-lg transition-all duration-300 ease-out opacity-0 invisible scale-90 [&.show]:opacity-100 [&.show]:visible [&.show]:scale-100" id="back-to-top" aria-label="חזור למעלה">
+        <i class="fas fa-chevron-up text-sm"></i>
+    </button>
+
+     <!-- Event Modal -->
+    <div class="fixed inset-0 z-[100] bg-gray-900/80 backdrop-blur-sm flex items-center justify-center p-4 transition-opacity duration-300 ease-out opacity-0 invisible" id="event-modal" role="dialog" aria-modal="true" aria-labelledby="modal-event-title">
+        <div class="bg-white rounded-2xl max-w-3xl w-full max-h-[90vh] flex flex-col overflow-hidden shadow-2xl transition-transform duration-300 ease-out scale-95" id="modal-content-wrapper">
+            <!-- Modal Header -->
+            <div class="p-6 sm:p-8 relative text-white rounded-t-2xl" id="modal-header">
+                <button class="absolute top-4 left-4 w-9 h-9 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center text-white transition-transform duration-200 hover:rotate-90 focus:outline-none focus:ring-2 focus:ring-white/50" id="close-modal" aria-label="סגור חלון"><i class="fas fa-times"></i></button>
+                <div class="w-16 h-16 bg-white/20 backdrop-blur-sm border border-white/20 rounded-2xl flex items-center justify-center mb-4 text-3xl" id="modal-icon" aria-hidden="true">
+                    <i class="fas fa-calendar-day"></i>
+                </div>
+                <div class="flex flex-wrap gap-3 mb-3 text-sm">
+                    <div class="inline-flex items-center gap-1.5 bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full font-medium" id="modal-event-date">
+                        <i class="fas fa-calendar-alt opacity-80" aria-hidden="true"></i>
+                        <span></span>
+                    </div>
+                    <div class="inline-flex items-center gap-1.5 bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full font-medium" id="modal-event-time">
+                        <i class="far fa-clock opacity-80" aria-hidden="true"></i>
+                        <span></span>
+                    </div>
+                </div>
+                <h3 class="text-2xl sm:text-3xl font-bold mb-1" id="modal-event-title">כותרת האירוע</h3>
+                <p class="text-base sm:text-lg text-white/80 font-medium" id="modal-event-subtitle">פרטים על האירוע</p>
+            </div>
+            <!-- Modal Body -->
+            <div class="p-6 sm:p-8 overflow-y-auto flex-grow text-gray-700">
+                <div class="prose prose-sm sm:prose-base max-w-none mb-8" id="modal-event-description">
+                    תיאור האירוע יופיע כאן.
+                </div>
+                <div class="space-y-5 pt-6 border-t border-gray-200">
+                    <!-- Feature 1 -->
+                    <div class="flex items-start gap-4">
+                        <div class="flex-shrink-0 w-9 h-9 bg-purple-100 text-purple-600 rounded-xl flex items-center justify-center text-lg mt-0.5" aria-hidden="true">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-800 mb-1">למי זה מתאים?</h4>
+                            <p class="text-sm text-gray-600" id="modal-event-audience"></p>
+                        </div>
+                    </div>
+                     <!-- Feature 2 -->
+                    <div class="flex items-start gap-4">
+                        <div class="flex-shrink-0 w-9 h-9 bg-purple-100 text-purple-600 rounded-xl flex items-center justify-center text-lg mt-0.5" aria-hidden="true">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-800 mb-1">מיקום</h4>
+                            <p class="text-sm text-gray-600" id="modal-event-location"></p>
+                        </div>
+                    </div>
+                    <!-- Feature 3 -->
+                    <div class="flex items-start gap-4">
+                         <div class="flex-shrink-0 w-9 h-9 bg-purple-100 text-purple-600 rounded-xl flex items-center justify-center text-lg mt-0.5" aria-hidden="true">
+                            <i class="fas fa-user-tie"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-800 mb-1">מנחה</h4>
+                            <p class="text-sm text-gray-600" id="modal-event-presenter"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Modal Footer -->
+            <div class="p-6 bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-4 rounded-b-2xl">
+                <div class="text-lg font-bold" id="modal-event-price"></div>
+                <a href="https://www.facebook.com/share/g/15kQXLvtWk/?mibextid=wwXIfr" class="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-pink-500 to-red-500 text-white rounded-full font-semibold shadow-md hover:shadow-lg transition-all duration-200 transform hover:scale-105" target="_blank" rel="noopener noreferrer">
+                    <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                    <span>להרשמה ופרטים נוספים</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        // Event data (Same as before)
+        const events = [
+            { id: 1, date: '1.5.2025', time: 'יום שלם', title: 'יום היכרות קהילתי', description: 'כבר עכשיו התחילו לנסח פסקה קצרה על עצמכם – כדי שתהיה לכם בשלוף ביום עצמו. וכמו בפעם הקודמת – בסוף הפוסט תכתבו עובדה אחת אמיתית ו-עובדה אחת שקרית – וננסה לנחש מה מהן נכונה.', icon: 'fas fa-users', bannerBg: 'linear-gradient(120deg, #a6c0fe 0%, #f68084 100%)', audience: 'לכל חברי הקהילה, חדשים וותיקים', location: 'אונליין, דרך זום', presenter: 'מייטל', isFree: true },
+            { id: 2, date: '8.5.2025', time: '10:00-12:00', title: 'סדנת בוקר CANVA', description: 'הפלטפורמה שמלווה אותי מהרגע הראשון כעצמאית – ממצגות, פליירים, לוחות קהילה ועד פוסטים ויזואליים. תלווה איתי את הסדנה גלית רוזנבלט, מעצבת מנוסה שעובדת עם חברות הייטק – ומביאה איתה ים של ידע פרקטי. למי זה מתאים? לכל מי שרוצה ללמוד לעצב לבד, בלי תלות באף אחד.', icon: 'fas fa-palette', bannerBg: 'linear-gradient(120deg, #d4fc79 0%, #96e6a1 100%)', audience: 'לכל מי שרוצה ללמוד לעצב לבד, בלי תלות באף אחד', location: 'אונליין, דרך זום', presenter: 'מייטל וגלית רוזנבלט', isFree: false },
+            { id: 3, date: '12.5.2025', time: '20:00', title: 'לייב חינמי עם גיא עמנואל', description: 'יועץ זוגי ומיני בערב שובר שגרה. מה קורה כש-AI נכנס לזוגיות? איך שיחה עם צ\'אטבוט יכולה לשנות מערכות יחסים אמיתיות? והאם יש מקום לרגש בתוך האלגוריתם? אתם מוזמנים לערב שהוא גם מצחיק, גם מרגש – וגם פותח את הראש.', icon: 'fas fa-heart', bannerBg: 'linear-gradient(to right, #ff758c 0%, #ff7eb3 100%)', audience: 'לכל מי שמתעניין בדינמיקת יחסים בעידן הטכנולוגי', location: 'אונליין, שידור לייב בפייסבוק', presenter: 'גיא עמנואל', isFree: true },
+            { id: 4, date: '22.5.2025', time: '19:00-21:15', title: 'סדנת אפליקציות חוזרת!', description: 'הביקוש היה מטורף – אז אנחנו חוזרים! אני ונדב נווה מתכנת בוגר הטכניון פעם נוספת. עולם הכלים רץ בקצב שלא נתפס – ואם לא יודעים איך לעבוד איתו – הולכים לאיבוד. ביחד נלמד שיטות עבודה עם כלים חדשים, כדי להוציא מהם את המקסימום.', icon: 'fas fa-mobile-alt', bannerBg: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', audience: 'לכל מי שרוצה להתמקצע בכלים דיגיטליים יעילים', location: 'אונליין, דרך זום', presenter: 'מייטל ונדב נווה', isFree: false },
+            { id: 5, date: '25.5.2025', time: '20:00', title: 'לייב חינמי מבוא לצ\'אט GPT', description: 'מיועד למי שחדש בתחום או עדיין מרגיש לא בטוח. נחזור לבסיס, נבין מה זה בכלל המודל הזה – וגם נציץ למה אפשר לייצר איתו, כולל הפתעות מעבר ל"סטודיו ג\'יבלי".', icon: 'fas fa-robot', bannerBg: 'linear-gradient(to right, #43e97b 0%, #38f9d7 100%)', audience: 'למתחילים וסקרנים שרוצים להכיר את עולם ה-AI', location: 'אונליין, שידור לייב בפייסבוק', presenter: 'מייטל', isFree: true }
+        ];
+
+        // --- DOM Elements ---
+        const calendarContainer = document.querySelector('.calendar');
+        const eventsContainer = document.querySelector('.events-container');
+        const modal = document.getElementById('event-modal');
+        const modalContentWrapper = document.getElementById('modal-content-wrapper');
+        const closeModalBtn = document.getElementById('close-modal');
+        const modalEventDate = document.getElementById('modal-event-date').querySelector('span');
+        const modalEventTime = document.getElementById('modal-event-time').querySelector('span');
+        const modalEventTitle = document.getElementById('modal-event-title');
+        const modalEventDescription = document.getElementById('modal-event-description');
+        const modalEventIcon = document.getElementById('modal-icon');
+        const modalHeader = document.getElementById('modal-header');
+        const modalEventSubtitle = document.getElementById('modal-event-subtitle');
+        const modalEventAudience = document.getElementById('modal-event-audience');
+        const modalEventLocation = document.getElementById('modal-event-location');
+        const modalEventPresenter = document.getElementById('modal-event-presenter');
+        const modalEventPrice = document.getElementById('modal-event-price');
+        const contactAiDream = document.getElementById('contact-ai-dream');
+        const contactAiTakeoff = document.getElementById('contact-ai-takeoff');
+        const backToTopBtn = document.getElementById('back-to-top');
+        const navbar = document.getElementById('mainNav');
+        const navContainer = document.getElementById('nav-container');
+        const mobileNavToggle = document.getElementById('mobile-nav-toggle');
+        const navLinksContainer = document.getElementById('nav-links'); // Desktop links
+        const mobileMenu = document.getElementById('mobile-menu'); // Mobile links container
+
+        // --- Calendar Generation ---
+        function generateCalendar() {
+            const firstDayIndex = 4; // May 2025 starts on a Thursday
+            const daysInMonth = 31;
+            calendarContainer.innerHTML = '';
+
+            // Add empty cells
+            for (let i = 0; i < firstDayIndex; i++) {
+                calendarContainer.innerHTML += `<div class="aspect-square rounded-xl invisible"></div>`;
+            }
+
+            // Add days
+            for (let day = 1; day <= daysInMonth; day++) {
+                const eventOnDay = events.find(event => parseInt(event.date.split('.')[0]) === day);
+                let dayClasses = 'calendar-day aspect-square rounded-xl flex flex-col items-center justify-center text-center p-1 transition-all duration-300 relative border focus:outline-none';
+                let dayContent = `<div class="day-number text-base sm:text-lg font-bold">${day}</div>`;
+                let ariaLabel = `תאריך ${day} במאי`;
+
+                if (eventOnDay) {
+                    dayClasses += ' has-event bg-gradient-to-br from-purple-500 to-indigo-600 text-white shadow-md cursor-pointer scale-100 hover:scale-105 hover:shadow-lg focus:ring-2 focus:ring-purple-500 focus:ring-offset-2';
+                    dayContent = `<div class="day-number text-base sm:text-lg font-extrabold">${day}</div><div class="event-indicator w-1.5 h-1.5 bg-pink-400 rounded-full mt-1 ring-1 ring-white/50 animate-pulse-indicator" aria-hidden="true"></div>`;
+                    ariaLabel = `אירוע ב-${day} במאי: ${eventOnDay.title}`;
+                } else {
+                    dayClasses += ' bg-gray-100 hover:bg-gray-200 text-gray-500 border-transparent';
+                }
+
+                const dayElement = document.createElement('div');
+                dayElement.className = dayClasses;
+                dayElement.innerHTML = dayContent;
+                dayElement.setAttribute('data-day', day);
+                dayElement.setAttribute('aria-label', ariaLabel);
+
+                if (eventOnDay) {
+                    dayElement.setAttribute('role', 'button');
+                    dayElement.setAttribute('tabindex', '0');
+                    dayElement.addEventListener('click', () => showEventModal(eventOnDay));
+                    dayElement.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault(); // Prevent space bar scrolling
+                            showEventModal(eventOnDay);
+                        }
+                    });
+                }
+
+                calendarContainer.appendChild(dayElement);
+            }
+        }
+
+        // --- Event Card Generation ---
+        function generateEventCards() {
+            eventsContainer.innerHTML = '';
+            events.forEach((event, index) => {
+                const eventCard = document.createElement('div');
+                eventCard.className = `event-card relative flex flex-col bg-slate-800/70 border border-white/10 rounded-2xl backdrop-blur-lg overflow-hidden transition-all duration-300 hover:bg-slate-700/70 hover:border-white/20 hover:-translate-y-1.5 shadow-lg hover:shadow-xl animate-on-scroll`;
+                eventCard.style.transitionDelay = `${index * 0.1}s`;
+
+                let ribbon = '';
+                if (event.isFree) {
+                    eventCard.classList.add('free');
+                    ribbon = `<div class="absolute top-3 -left-10 transform -rotate-45 bg-gradient-to-r from-pink-500 to-red-500 text-white px-8 py-0.5 text-[11px] font-bold uppercase tracking-wide shadow-md z-10">חינם</div>`;
+                }
+
+                eventCard.innerHTML = `
+                    ${ribbon}
+                    <div class="event-banner h-44 relative overflow-hidden flex justify-center items-center" aria-hidden="true">
+                        <div class="event-banner-bg absolute inset-0 bg-cover bg-center opacity-30 group-hover:opacity-50 scale-110 group-hover:scale-100 transition-all duration-500 ease-out" style="background-image: ${event.bannerBg ? `url('...')` : 'none'}; background: ${event.bannerBg || 'var(--gradient-dark)'};"></div>
+                        <div class="event-icon-wrapper relative z-10 w-[70px] h-[70px] bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl flex justify-center items-center shadow-lg transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6">
+                            <i class="${event.icon} text-3xl text-white transition-transform duration-300 group-hover:-rotate-6"></i>
+                        </div>
+                    </div>
+                    <div class="event-content p-5 sm:p-6 flex flex-col flex-grow text-gray-200">
+                        <div class="flex flex-wrap gap-2 mb-4 text-xs">
+                            <div class="inline-flex items-center gap-1.5 bg-purple-500/20 text-purple-300 px-3 py-1 rounded-full font-medium">
+                                <i class="fas fa-calendar-alt fa-fw opacity-80" aria-hidden="true"></i>
+                                <span>${event.date}</span>
+                            </div>
+                            <div class="inline-flex items-center gap-1.5 bg-cyan-500/20 text-cyan-300 px-3 py-1 rounded-full font-medium">
+                                <i class="far fa-clock fa-fw opacity-80" aria-hidden="true"></i>
+                                <span>${event.time}</span>
+                            </div>
+                        </div>
+                        <h3 class="event-title text-lg sm:text-xl font-bold text-white mb-3">${event.title}</h3>
+                        <p class="event-description text-sm text-gray-400 mb-5 flex-grow">${event.description.substring(0, 110)}…</p>
+                        <div class="event-footer mt-auto pt-4 border-t border-white/10 flex flex-col sm:flex-row justify-between items-center gap-3">
+                            <div class="event-price text-base font-semibold ${event.isFree ? 'text-cyan-400' : 'text-pink-400'}">
+                                ${event.isFree ? '<i class="fas fa-gift mr-1.5"></i> אירוע חינם' : '<i class="fas fa-tag mr-1.5"></i> אירוע בתשלום'}
+                            </div>
+                            <button class="event-button event-details inline-flex items-center justify-center gap-2 w-full sm:w-auto px-4 py-2 rounded-full text-xs font-semibold bg-white/10 border border-white/20 text-white hover:bg-white/20 transition-colors duration-200" data-id="${event.id}">
+                                <span>פרטים נוספים</span>
+                                <i class="fas fa-arrow-left event-button-icon text-[10px]"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                 // Add group class for hover effects
+                 eventCard.classList.add('group');
+                 eventsContainer.appendChild(eventCard);
+            });
+
+            // Add event listeners AFTER cards are in the DOM
+            document.querySelectorAll('.event-details').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const eventId = parseInt(button.getAttribute('data-id'));
+                    const event = events.find(e => e.id === eventId);
+                    if (event) {
+                        showEventModal(event);
+                    }
+                });
+                 button.addEventListener('keydown', (e) => {
+                     if (e.key === 'Enter' || e.key === ' ') {
+                         e.preventDefault();
+                        const eventId = parseInt(button.getAttribute('data-id'));
+                        const event = events.find(ev => ev.id === eventId);
+                        if (event) {
+                            showEventModal(event);
+                        }
+                     }
+                 });
+            });
+        }
+
+
+        // --- Modal Handling ---
+        function showEventModal(event) {
+            // Populate Modal Content
+            modalEventIcon.innerHTML = `<i class="${event.icon}" aria-hidden="true"></i>`;
+            modalEventDate.textContent = event.date;
+            modalEventTime.textContent = event.time;
+            modalEventTitle.textContent = event.title;
+            modalEventSubtitle.textContent = event.isFree ? 'אירוע חינמי פתוח לקהילה' : 'אירוע בתשלום לחברי הקהילה';
+            modalEventDescription.innerHTML = event.description.replace(/\n/g, '<br>');
+            modalEventAudience.textContent = event.audience;
+            modalEventLocation.textContent = event.location;
+            modalEventPresenter.textContent = event.presenter;
+
+            modalEventPrice.innerHTML = event.isFree
+                ? '<i class="fas fa-gift mr-1.5"></i> אירוע חינם'
+                : '<i class="fas fa-tag mr-1.5"></i> אירוע בתשלום';
+             // Apply Tailwind classes directly for color
+            modalEventPrice.className = `text-lg font-bold ${event.isFree ? 'text-cyan-600' : 'text-purple-700'}`;
+
+            // Update modal header background using inline style for dynamic gradient
+            modalHeader.style.background = event.bannerBg || 'linear-gradient(135deg, #7859f2, #5739d6)'; // Default gradient
+
+            // Show Modal with transitions
+            modal.classList.remove('invisible', 'opacity-0');
+            modal.classList.add('opacity-100', 'visible');
+            modalContentWrapper.classList.remove('scale-95');
+            modalContentWrapper.classList.add('scale-100');
+
+            document.body.style.overflow = 'hidden';
+             setTimeout(() => closeModalBtn.focus(), 50); // Delay focus slightly
+        }
+
+        function closeModal() {
+            modal.classList.add('opacity-0');
+            modal.classList.remove('visible');
+             modalContentWrapper.classList.add('scale-95');
+             modalContentWrapper.classList.remove('scale-100');
+
+             // Delay hiding completely to allow fade-out
+             setTimeout(() => {
+                 modal.classList.add('invisible');
+                 document.body.style.overflow = 'auto';
+             }, 300); // Match transition duration
+        }
+
+        closeModalBtn.addEventListener('click', closeModal);
+        // Close on backdrop click
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+         // Close with Escape key
+         document.addEventListener('keydown', (e) => {
+             if (e.key === 'Escape' && !modal.classList.contains('invisible')) {
+                 closeModal();
+             }
+         });
+
+
+        // --- Project Contact Buttons ---
+        contactAiDream.addEventListener('click', (e) => {
+            e.preventDefault();
+            alert('לפרטים נוספים על AI DREAM, נא לפנות למייטל דרך הקהילה בפייסבוק או בפרטי.');
+        });
+
+        contactAiTakeoff.addEventListener('click', (e) => {
+            e.preventDefault();
+            alert('לפרטים נוספים על AI TAKE OFF, נא לפנות למייטל דרך הקהילה בפייסבוק או בפרטי.');
+        });
+
+        // --- Navbar Scroll Effect & Back to Top ---
+        const handleScroll = () => {
+            const scrollY = window.scrollY;
+            const navHeight = navbar.offsetHeight;
+
+            // Navbar Scroll Effect
+            if (scrollY > 50) {
+                navbar.classList.add('bg-slate-900/95', 'shadow-lg');
+                navContainer.classList.add('py-2');
+                 navContainer.classList.remove('py-3');
+            } else {
+                navbar.classList.remove('bg-slate-900/95', 'shadow-lg');
+                navContainer.classList.remove('py-2');
+                navContainer.classList.add('py-3');
+            }
+
+            // Back to Top Button
+            if (scrollY > 400) {
+                backToTopBtn.classList.add('show');
+            } else {
+                backToTopBtn.classList.remove('show');
+            }
+
+            // Active Nav Link Highlighting
+            let currentSection = '';
+            const sections = document.querySelectorAll('section[id]');
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                if (scrollY >= (sectionTop - navHeight - 60)) { // Adjusted offset
+                    currentSection = section.getAttribute('id');
+                }
+            });
+
+            // Update both desktop and mobile links
+             [...navLinksContainer.querySelectorAll('a'), ...mobileMenu.querySelectorAll('a')].forEach(link => {
+                link.classList.remove('active', 'bg-gradient-to-r', 'from-cyan-400', 'to-teal-500', '!text-gray-900', 'shadow-lg', 'font-semibold');
+                 link.classList.remove('mobile-active', 'bg-cyan-500/20', 'text-cyan-200', 'font-semibold'); // mobile specific active style
+
+                const linkHref = link.getAttribute('href');
+                if (linkHref === `#${currentSection}`) {
+                     if (link.closest('#nav-links')) { // Desktop link
+                         link.classList.add('active', 'bg-gradient-to-r', 'from-cyan-400', 'to-teal-500', '!text-gray-900', 'shadow-lg', 'font-semibold');
+                     } else { // Mobile link
+                          link.classList.add('mobile-active', 'bg-cyan-600/30', 'text-cyan-100', 'font-semibold');
+                     }
+                }
+            });
+        };
+
+        window.addEventListener('scroll', handleScroll);
+
+        backToTopBtn.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+
+        // --- Mobile Navigation Toggle ---
+        mobileNavToggle.addEventListener('click', () => {
+            const isExpanded = mobileNavToggle.getAttribute('aria-expanded') === 'true';
+            mobileMenu.classList.toggle('hidden');
+            mobileNavToggle.setAttribute('aria-expanded', !isExpanded);
+            mobileNavToggle.querySelector('i').className = isExpanded ? 'fas fa-bars' : 'fas fa-times';
+        });
+
+         // Close mobile menu when a link is clicked
+         mobileMenu.querySelectorAll('a').forEach(link => {
+             link.addEventListener('click', () => {
+                 mobileMenu.classList.add('hidden');
+                 mobileNavToggle.setAttribute('aria-expanded', 'false');
+                 mobileNavToggle.querySelector('i').className = 'fas fa-bars';
+             });
+         });
+
+        // --- Animate Elements on Scroll ---
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.1
+        };
+
+        const observerCallback = (entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animated');
+                    observer.unobserve(entry.target); // Animate only once
+                }
+            });
+        };
+
+        const scrollObserver = new IntersectionObserver(observerCallback, observerOptions);
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            generateCalendar();
+            generateEventCards();
+            handleScroll(); // Initial check
+
+            // Observe elements for scroll animations
+            const elementsToAnimate = document.querySelectorAll('.animate-on-scroll');
+            elementsToAnimate.forEach(el => scrollObserver.observe(el));
+        });
+
+    </script>
+</body>
+</html>
